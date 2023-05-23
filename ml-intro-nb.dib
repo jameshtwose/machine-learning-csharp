@@ -1,0 +1,160 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
+#!csharp
+
+#i "nuget:https://pkgs.dev.azure.com/dnceng/public/_packaging/MachineLearning/nuget/v3/index.json"
+#r "nuget: Microsoft.ML, 2.0.0-preview.22356.1"
+#r "nuget: Plotly.NET, 4.0.0"
+#r "nuget: Plotly.NET.Interactive, 4.0.0"
+
+#!csharp
+
+using Plotly.NET;
+using Microsoft.ML;
+using Microsoft.ML.Data;
+
+#!csharp
+
+MLContext mlContext = new MLContext();
+
+#!csharp
+
+public class HouseData
+{
+    [LoadColumn(0)]
+    public float Size { get; set; }
+
+    [LoadColumn(1)]
+    public float Price { get; set; }
+}
+
+#!csharp
+
+public class Prediction
+{
+    [ColumnName("Score")]
+    public float Price { get; set; }
+}
+
+#!csharp
+
+HouseData[] houseData = {
+    new HouseData() { Size = 1.1F, Price = 1.2F },
+    new HouseData() { Size = 1.9F, Price = 2.3F },
+    new HouseData() { Size = 2.8F, Price = 3.0F },
+    new HouseData() { Size = 3.4F, Price = 3.7F } };
+
+#!csharp
+
+houseData
+
+#!csharp
+
+IDataView trainingData = mlContext.Data.LoadFromEnumerable(houseData);
+
+#!csharp
+
+// specify data preparation and model training pipeline
+var pipeline = mlContext.Transforms.Concatenate("Features", new[] { "Size" })
+    .Append(mlContext.Regression.Trainers.Sdca(labelColumnName: "Price", maximumNumberOfIterations: 100));
+
+#!csharp
+
+pipeline
+
+#!csharp
+
+var model = pipeline.Fit(trainingData);
+
+#!csharp
+
+model
+
+#!csharp
+
+// test data
+HouseData[] testData = {
+    new HouseData() { Size = 1.1F, Price = 1.2F },
+    new HouseData() { Size = 1.2F, Price = 1.5F },
+    new HouseData() { Size = 1.4F, Price = 1.7F },
+    new HouseData() { Size = 1.6F, Price = 1.9F },
+    new HouseData() { Size = 1.9F, Price = 2.3F },
+    new HouseData() { Size = 2.8F, Price = 3.0F },
+    new HouseData() { Size = 3.2F, Price = 3.5F },
+    new HouseData() { Size = 3.3F, Price = 3.6F },
+    new HouseData() { Size = 3.5F, Price = 3.9F }, 
+    new HouseData() { Size = 3.7F, Price = 4.3F }, 
+    new HouseData() { Size = 4.0F, Price = 6.1F }, 
+    new HouseData() { Size = 5.0F, Price = 7.2F }, 
+    new HouseData() { Size = 6.0F, Price = 8.5F }, 
+    new HouseData() { Size = 7.0F, Price = 9.8F }, 
+    new HouseData() { Size = 8.0F, Price = 10.3F },  };
+
+#!csharp
+
+// load the test data into an IDataView
+IDataView trainingTestData = mlContext.Data.LoadFromEnumerable(testData);
+
+#!csharp
+
+trainingTestData
+
+#!csharp
+
+// transform the test data using the model
+IDataView transformedTestData = model.Transform(trainingTestData);
+
+#!csharp
+
+transformedTestData
+
+#!csharp
+
+// evaluate the model
+RegressionMetrics trainedModelMetrics = mlContext.Regression.Evaluate(transformedTestData, labelColumnName: "Price", scoreColumnName: "Score");
+
+#!csharp
+
+trainedModelMetrics
+
+#!csharp
+
+// print the r-squared score
+Console.WriteLine($"R-Squared: {trainedModelMetrics.RSquared:0.##}");
+
+#!csharp
+
+var predictionFunction = mlContext.Model.CreatePredictionEngine<HouseData, Prediction>(model);
+
+#!csharp
+
+predictionFunction
+
+#!csharp
+
+var size = new HouseData() { Size = 2.5F };
+var price = predictionFunction.Predict(size);
+Console.WriteLine($"Predicted price for size: {size.Size * 1000} sq ft= {price.Price * 100:C}k");
+
+#!csharp
+
+open Plotly.NET
+let xData = [ 0. .. 10. ]
+let yData = [ 0. .. 10. ]
+let myFirstChart = Chart.Point(xData, yData)
+
+#!csharp
+
+let myFirstStyledChart =
+    Chart.Point(xData, yData)
+    |> Chart.withTitle "Hello world!"
+    |> Chart.withXAxisStyle ("xAxis")
+    |> Chart.withYAxisStyle ("yAxis")
+
+#!csharp
+
+open Plotly.NET
+
+let pointChart = Chart.Point(xy = [ 1, 2; 3, 4 ])
