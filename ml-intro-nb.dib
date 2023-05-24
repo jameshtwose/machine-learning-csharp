@@ -137,24 +137,3 @@ predictionFunction
 var size = new HouseData() { Size = 2.5F };
 var price = predictionFunction.Predict(size);
 Console.WriteLine($"Predicted price for size: {size.Size * 1000} sq ft= {price.Price * 100:C}k");
-
-#!csharp
-
-open Plotly.NET
-let xData = [ 0. .. 10. ]
-let yData = [ 0. .. 10. ]
-let myFirstChart = Chart.Point(xData, yData)
-
-#!csharp
-
-let myFirstStyledChart =
-    Chart.Point(xData, yData)
-    |> Chart.withTitle "Hello world!"
-    |> Chart.withXAxisStyle ("xAxis")
-    |> Chart.withYAxisStyle ("yAxis")
-
-#!csharp
-
-open Plotly.NET
-
-let pointChart = Chart.Point(xy = [ 1, 2; 3, 4 ])
